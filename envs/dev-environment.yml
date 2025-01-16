@@ -1,0 +1,17 @@
+name: gameshelf-dev
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - black
+  - isort
+  - flake8
+  - flake8-docstrings
+  - flake8-builtins
+  - flake8-comprehensions
+  - flake8-eradicate
+  - flake8-print
+  - pep8-naming
+
+  - kaggle
