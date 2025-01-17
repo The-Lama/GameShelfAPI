@@ -1,0 +1,7 @@
+name: gameshelf-test
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pytest
+  - pandas
