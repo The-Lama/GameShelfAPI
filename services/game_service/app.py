@@ -1,4 +1,5 @@
 from flask import Flask
+
 from services.game_service.routes import game_routes
 
 app = Flask(__name__)
