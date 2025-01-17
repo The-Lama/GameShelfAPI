@@ -1,4 +1,4 @@
-# Ignore all files in the data folder
+__pycache__/
 data/*
 
 # Allow the placeholder file
