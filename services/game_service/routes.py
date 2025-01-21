@@ -32,7 +32,7 @@ def list_games():
     )
 
 
-@game_routes.route("/games/<int:id>", methods=["GET"])
+@game_routes.route("/games/<int:game_id>", methods=["GET"])
 def get_game(game_id):
     """Return details of a game by ID if it exists."""
     game = game_service.get_game(game_id)
