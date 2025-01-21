@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from services.game_service.game_service import GameService
 
@@ -9,7 +9,27 @@ game_service = GameService()
 @game_routes.route("/games", methods=["GET"])
 def list_games():
     """Return a list of all games."""
-    return jsonify(game_service.list_games())
+    page = int(request.args.get("page", 1))
+    limit = int(request.args.get("limit", 10))
+    name = request.args.get("name", "").lower()
+
+    if page < 1 or limit < 1:
+        return jsonify({"error": "Invalid pagination parameters"}), 400
+
+    games = game_service.list_games()
+    if name:
+        games = [game for game in games if name in game["Name"].lower()]
+
+    start = (page - 1) * limit
+    end = start + limit
+    paginated_games = games[start:end]
+
+    if not paginated_games:
+        return jsonify({"error": "No games found for the given page"}), 404
+
+    return jsonify(
+        {"page": page, "limit": limit, "total": len(games), "games": paginated_games}
+    )
 
 
 @game_routes.route("/games/<int:id>", methods=["GET"])
