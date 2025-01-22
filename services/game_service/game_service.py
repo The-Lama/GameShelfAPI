@@ -1,3 +1,5 @@
+import pandas as pd
+
 from services.game_service.utils.data_loader import load_csv
 
 
@@ -8,6 +10,14 @@ class GameService:
         """Initialize the game service with a dataset."""
         self.games = load_csv(dataset_path)
         self.games = self.games[["BGGId", "Name"]]
+
+    @classmethod
+    def from_static_data(cls, games):
+        """Create a GameService using a static list of games."""
+        instance = cls.__new__(cls)
+        games_df = pd.DataFrame(games)
+        instance.games = games_df
+        return instance
 
     def list_games(self):
         """List all board games."""

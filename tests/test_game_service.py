@@ -1,29 +1,40 @@
 import pytest
 
-from services.game_service.game_service import GameService
 
-
-@pytest.fixture
-def test_game_service():
-    """Fixture to provide a GameService instance with test data."""
-    test_data_path = "tests/test_data/games_test.csv"
-    return GameService(dataset_path=test_data_path)
-
-
-def test_list_games(test_game_service):
+def test_list_games_with_static_data(static_game_service):
     """Test that all games are listed correctly."""
-    games = test_game_service.list_games()
+    games = static_game_service.list_games()
+    assert len(games) == 6
+    assert games[0]["Name"] == "Die Macher"
+    assert games[5]["Name"] == "Mare Mediterraneum"
+
+
+@pytest.mark.parametrize(
+    "game_id, expected_name",
+    [
+        (1, "Die Macher"),
+        (2, "Dragonmaster"),
+        (4, "Tal der Könige"),
+    ],
+)
+def test_get_existing_game_by_id_static(static_game_service, game_id, expected_name):
+    """Test fetching an existing game by ID."""
+    game = static_game_service.get_game(game_id)
+    assert game["Name"] == expected_name
+
+
+def test_get_nonexisten_by_id_static(static_game_service):
+    """Test fetching a non-existent game returns None."""
+    game = static_game_service.get_game(999)
+    assert game is None
+
+
+def test_csv_game_service_integration(csv_game_service):
+    """ "Integration Test: Ensure the CSV service works end-to-end."""
+    games = csv_game_service.list_games()
     assert len(games) == 5
     assert games[0]["Name"] == "Die Macher"
+    assert games[0]["BGGId"] == 1
 
-
-def test_get_game_found(test_game_service):
-    """Test fetching an existing game by ID."""
-    game = test_game_service.get_game(2)
+    game = csv_game_service.get_game(2)
     assert game["Name"] == "Dragonmaster"
-
-
-def test_get_game_not_found(test_game_service):
-    """Test fetching a non-existent game returns None."""
-    game = test_game_service.get_game(99)
-    assert game is None
