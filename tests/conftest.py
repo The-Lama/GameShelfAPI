@@ -14,6 +14,8 @@ def static_game_service():
         {"BGGId": 4, "Name": "Tal der Könige"},
         {"BGGId": 5, "Name": "Acquire"},
         {"BGGId": 6, "Name": "Mare Mediterraneum"},
+        {"BGGId": 32, "Name": "Buffalo Chess"},
+        {"BBId": 171, "Name": "Chess"},
     ]
     service = GameService.from_static_data(static_games)
     return service

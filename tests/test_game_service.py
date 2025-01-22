@@ -4,7 +4,7 @@ import pytest
 def test_list_games_with_static_data(static_game_service):
     """Test that all games are listed correctly."""
     games = static_game_service.list_games()
-    assert len(games) == 6
+    assert len(games) == 8
     assert games[0]["Name"] == "Die Macher"
     assert games[5]["Name"] == "Mare Mediterraneum"
 
@@ -30,7 +30,7 @@ def test_get_nonexisten_by_id_static(static_game_service):
 
 
 def test_csv_game_service_integration(csv_game_service):
-    """ "Integration Test: Ensure the CSV service works end-to-end."""
+    """Integration Test: Ensure the CSV service works end-to-end."""
     games = csv_game_service.list_games()
     assert len(games) == 5
     assert games[0]["Name"] == "Die Macher"
