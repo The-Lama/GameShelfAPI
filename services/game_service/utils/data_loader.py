@@ -1,9 +1,25 @@
+import logging
+
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 def load_csv(path):
     """Load a CSV file as a pandas dataframe."""
     try:
-        return pd.read_csv(path)
+        logger.info(f"Attempting to load dataset from {path}")
+        df = pd.read_csv(path)
+        logger.info(f"Dataset loaded successfully from {path}, with {len(df)} rows.")
+        return df
     except FileNotFoundError:
-        raise Exception(f"Dataset as {path} was not found.")
+        logger.error(f"Dataset at {path} was not found.")
+        raise FileNotFoundError(f"Dataset at {path} was not found.")
+    except pd.errors.EmptyDataError:
+        logger.error(f"Dataset at {path} is empty.")
+        raise ValueError(f"Dataset at {path} is empty.")
+    except Exception as e:
+        logger.exception(f"An error occurred while loading the dataset at {path}: {e}")
+        raise RuntimeError(
+            f"An error occurred while loading the dataset at {path}: {e}"
+        )
