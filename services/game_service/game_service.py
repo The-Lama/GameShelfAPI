@@ -29,8 +29,14 @@ class GameService:
     def _validate_dataset(self) -> None:
         """Validate the structure of the loaded dataset."""
         required_columns = {"BGGId", "Name"}
-        if not required_columns.issubset(self.games.columns):
-            logger.error(f"Dataset is missing required columns: {required_columns}")
+        missing_columns = required_columns - set(self.games.columns)
+
+        if missing_columns:
+            logger.error(
+                f"Dataset validation failed."
+                f"Missing required columns: {missing_columns}"
+                f"Availible columns: {self.games.columns}"
+            )
             raise ValueError(f"Dataset must contain columns: {required_columns}")
         self.games = self.games[list(required_columns)]
         logger.info("Dataset validated successfully.")

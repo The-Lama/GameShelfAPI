@@ -7,11 +7,9 @@ logger = logging.getLogger(__name__)
 
 def load_csv(path: str) -> pd.DataFrame:
     """Load a CSV file as a pandas dataframe."""
+    logger.info(f"Attempting to load dataset from {path}")
     try:
-        logger.info(f"Attempting to load dataset from {path}")
         df = pd.read_csv(path)
-        logger.info(f"Dataset loaded successfully from {path}, with {len(df)} rows.")
-        return df
     except FileNotFoundError:
         logger.error(f"Dataset at {path} was not found.")
         raise FileNotFoundError(f"Dataset at {path} was not found.")
@@ -23,3 +21,6 @@ def load_csv(path: str) -> pd.DataFrame:
         raise RuntimeError(
             f"An error occurred while loading the dataset at {path}: {e}"
         )
+
+    logger.info(f"Dataset loaded successfully from {path}, with {len(df)} rows.")
+    return df

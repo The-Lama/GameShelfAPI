@@ -29,6 +29,13 @@ def set_game_service() -> None:
 
 
 if __name__ == "__main__":
+    port = 5001
+    host = "0.0.0.0"
+    dataset_path = "data/games.csv"
+
     logger.info("Starting the Flask application...")
-    game_service = GameService("data/games.csv")
+    logger.info("Application is configured with the following settings:")
+    logger.info(f"HOST: {host}, PORT: {port}, Dataset Path: {dataset_path}")
+
+    game_service = GameService(dataset_path)
     app.run(host="0.0.0.0", port=5001)

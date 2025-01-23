@@ -16,13 +16,21 @@ def list_games() -> Response:
     name = request.args.get("name", "").lower()
 
     if page < 1 or limit < 1:
-        logger.warning("Invalid pagination parameters provided.")
+        logger.warning(
+            f"Invalid pagination parameters provided: page={page}, limit={limit}"
+        )
         return jsonify({"error": "Invalid pagination parameters"}), 400
+    else:
+        logger.debug(f"Pagination parameters - page: {page}, limit: {limit}")
 
     games = g.game_service.list_games()
     if name:
         games = [game for game in games if name in game["Name"].lower()]
-        logger.debug(f"Filtered games by name containing: {name}")
+        filtered_count = len(games)
+        logger.debug(
+            f"Filtered games by name containing: '{name}', "
+            f"found {filtered_count} matches."
+        )
 
     start = (page - 1) * limit
     end = start + limit
@@ -41,7 +49,7 @@ def list_games() -> Response:
 @game_routes.route("/games/<int:game_id>", methods=["GET"])
 def get_game(game_id: int) -> Response:
     """Return details of a game by ID if it exists."""
-    logger.info(f"Received requeest to for game with ID: {game_id}")
+    logger.info(f"Received request to for game with ID: {game_id}")
     game = g.game_service.get_game(game_id)
     if game is None:
         logger.warning(f"Game with ID {game_id} was not found.")
