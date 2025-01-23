@@ -1,10 +1,29 @@
 import logging
 
+import pandas as pd
 from flask import Blueprint, Response, g, jsonify, request
 
 logger = logging.getLogger(__name__)
 
 game_routes = Blueprint("game_routes", __name__)
+
+
+def paginate(data: pd.DataFrame, page: int, limit: int) -> pd.DataFrame:
+    """Return a paginated subset of data based on the given page and limit."""
+    logger.debug(f"Pagination parameters - page: {page}, limit: {limit}")
+    if page < 1 or limit < 1:
+        raise ValueError(
+            f"Invalid pagination parameters: page={page}, "
+            f"limit={limit}. Both must be >= 1."
+        )
+
+    start = (page - 1) * limit
+    end = start + limit
+
+    if start >= len(data):
+        raise IndexError(f"Page {page} exceeds available data range.")
+
+    return data[start:end]
 
 
 @game_routes.route("/games", methods=["GET"])
@@ -15,14 +34,6 @@ def list_games() -> Response:
     limit = int(request.args.get("limit", 10))
     name = request.args.get("name", "").lower()
 
-    if page < 1 or limit < 1:
-        logger.warning(
-            f"Invalid pagination parameters provided: page={page}, limit={limit}"
-        )
-        return jsonify({"error": "Invalid pagination parameters"}), 400
-    else:
-        logger.debug(f"Pagination parameters - page: {page}, limit: {limit}")
-
     games = g.game_service.list_games()
     if name:
         games = [game for game in games if name in game["Name"].lower()]
@@ -32,13 +43,23 @@ def list_games() -> Response:
             f"found {filtered_count} matches."
         )
 
-    start = (page - 1) * limit
-    end = start + limit
-    paginated_games = games[start:end]
+        if len(games) == 0:
+            logger.warning(
+                f"No games found with matching the filter criteria: '{name}'"
+            )
+            return (
+                jsonify({"error": "No games found matching the filter criteria"}),
+                204,
+            )
 
-    if not paginated_games:
-        logger.warning(f"No games found for page {page} with limit {limit}.")
-        return jsonify({"error": "No games found for the given page"}), 404
+    try:
+        paginated_games = paginate(games, page, limit)
+    except ValueError as e:
+        logger.warning(e)
+        return jsonify({"error": str(e)}), 422
+    except IndexError as e:
+        logger.warning(e)
+        return jsonify({"error": str(e)}), 204
 
     logger.info(f"Returning {len(paginated_games)} games for page {page}")
     return jsonify(

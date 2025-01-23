@@ -25,7 +25,7 @@ def test_invalid_pagination(client: FlaskClient) -> None:
     response = client.get("/games?page=0&limit=-1")
     data = response.get_json()
 
-    assert response.status_code == 400
+    assert response.status_code == 422
     assert "error" in data
 
 
