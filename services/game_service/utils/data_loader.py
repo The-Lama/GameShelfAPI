@@ -5,7 +5,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def load_csv(path):
+def load_csv(path: str) -> pd.DataFrame:
     """Load a CSV file as a pandas dataframe."""
     try:
         logger.info(f"Attempting to load dataset from {path}")

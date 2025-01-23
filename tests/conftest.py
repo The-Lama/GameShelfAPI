@@ -1,11 +1,16 @@
+from typing import Generator
+
 import pytest
+from flask.testing import FlaskClient
 
 from services.game_service.app import app
 from services.game_service.game_service import GameService
 
+ClientGenerator = Generator[FlaskClient, None, None]
+
 
 @pytest.fixture
-def static_game_service():
+def static_game_service() -> GameService:
     """Create a GameService fixture using predefined static data."""
     static_games = [
         {"BGGId": 1, "Name": "Die Macher"},
@@ -22,13 +27,13 @@ def static_game_service():
 
 
 @pytest.fixture(scope="module")
-def csv_game_service():
+def csv_game_service() -> GameService:
     """Create a GameService fixture using data from a CSV file."""
     return GameService("tests/data/games_test.csv")
 
 
 @pytest.fixture
-def client(static_game_service):
+def client(static_game_service) -> ClientGenerator:
     """Create a Flask test client using the static game service."""
     app.config["TESTING"] = True
     app.config["GAME_SERVICE"] = static_game_service

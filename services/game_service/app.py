@@ -14,7 +14,7 @@ app = Flask(__name__)
 app.register_blueprint(game_routes)
 
 
-def get_game_service():
+def get_game_service() -> GameService:
     """Return the GameService instance."""
     logger.debug("Retrieving the GameService instance.")
     if "GAME_SERVICE" in app.config:
@@ -23,7 +23,7 @@ def get_game_service():
 
 
 @app.before_request
-def set_game_service():
+def set_game_service() -> None:
     """Set the GameService instance in the global context."""
     g.game_service = get_game_service()
 

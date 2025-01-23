@@ -1,6 +1,6 @@
 import logging
 
-from flask import Blueprint, g, jsonify, request
+from flask import Blueprint, Response, g, jsonify, request
 
 logger = logging.getLogger(__name__)
 
@@ -8,7 +8,7 @@ game_routes = Blueprint("game_routes", __name__)
 
 
 @game_routes.route("/games", methods=["GET"])
-def list_games():
+def list_games() -> Response:
     """Return a list of all games."""
     logger.info("Recieved request to list games.")
     page = int(request.args.get("page", 1))
@@ -39,7 +39,7 @@ def list_games():
 
 
 @game_routes.route("/games/<int:game_id>", methods=["GET"])
-def get_game(game_id):
+def get_game(game_id: int) -> Response:
     """Return details of a game by ID if it exists."""
     logger.info(f"Received requeest to for game with ID: {game_id}")
     game = g.game_service.get_game(game_id)

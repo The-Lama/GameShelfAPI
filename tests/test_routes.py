@@ -1,4 +1,7 @@
-def test_list_games(client):
+from flask.testing import FlaskClient
+
+
+def test_list_games(client: FlaskClient) -> None:
     """Test listing pages with pagination."""
     response = client.get("/games?page=1&limit=2")
     data = response.get_json()
@@ -7,7 +10,7 @@ def test_list_games(client):
     assert len(data["games"]) == 2
 
 
-def test_fiter_games(client):
+def test_fiter_games(client: FlaskClient) -> None:
     """Test filtering games by a name query parameter."""
     response = client.get("/games?name=Chess")
     data = response.get_json()
@@ -17,7 +20,7 @@ def test_fiter_games(client):
     assert data["games"][1]["Name"] == "Chess"
 
 
-def test_invalid_pagination(client):
+def test_invalid_pagination(client: FlaskClient) -> None:
     """Test handling of invalid pagination parameters."""
     response = client.get("/games?page=0&limit=-1")
     data = response.get_json()
@@ -26,7 +29,7 @@ def test_invalid_pagination(client):
     assert "error" in data
 
 
-def test_get_game_by_id(client):
+def test_get_game_by_id(client: FlaskClient) -> None:
     """Test retrieving a game by its ID."""
     response = client.get("/games/1")
     data = response.get_json()
