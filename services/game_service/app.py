@@ -13,8 +13,6 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.register_blueprint(game_routes)
 
-game_service = GameService("data/games.csv")
-
 
 def get_game_service():
     """Return the GameService instance."""
@@ -32,4 +30,5 @@ def set_game_service():
 
 if __name__ == "__main__":
     logger.info("Starting the Flask application...")
+    game_service = GameService("data/games.csv")
     app.run(host="0.0.0.0", port=5001)
