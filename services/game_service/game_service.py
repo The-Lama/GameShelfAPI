@@ -51,10 +51,24 @@ class GameService:
         logger.info("GameService created from static data successfully.")
         return instance
 
-    def list_games(self) -> List[GameDict]:
-        """List all board games."""
-        logger.debug("Listing all board games.")
-        return self.games.to_dict(orient="records")
+    def list_games(self, name_filter: Optional[str] = None) -> List[GameDict]:
+        """List board games that satisfy an optional filter."""
+        games = self.games
+
+        if name_filter:
+            logger.debug(f"Filtering games by name containing: '{name_filter}'")
+            games = self.games[
+                self.games["Name"].str.contains(name_filter, case=False, na=False)
+            ]
+
+            filtered_games_count = len(games)
+            logger.debug(
+                f"Filtered games by name containing: '{name_filter}', "
+                f"found {filtered_games_count} matches."
+            )
+
+        logger.debug("Listing board games.")
+        return games.to_dict(orient="records")
 
     def get_game(self, game_id: int) -> Optional[GameDict]:
         """Get board game by id."""

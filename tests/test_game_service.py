@@ -11,6 +11,14 @@ def test_list_games_with_static_data(static_game_service: GameService) -> None:
     assert games[5]["Name"] == "Mare Mediterraneum"
 
 
+def test_list_games_with_filter(static_game_service: GameService) -> None:
+    """Test that list_games filter works as expected."""
+    games = static_game_service.list_games("Chess")
+    assert len(games) == 2
+    assert games[0]["Name"] == "Buffalo Chess"
+    assert games[1]["Name"] == "Chess"
+
+
 @pytest.mark.parametrize(
     "game_id, expected_name",
     [
