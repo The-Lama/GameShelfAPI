@@ -4,10 +4,9 @@ from flask import Flask, g
 
 from services.game_service.game_service import GameService
 from services.game_service.routes import game_routes
+from services.game_service.utils.config import (configure_logging,
+                                                parse_arguments)
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
@@ -32,6 +31,9 @@ if __name__ == "__main__":
     port = 5001
     host = "0.0.0.0"
     dataset_path = "data/games.csv"
+
+    args = parse_arguments()
+    configure_logging(args.verbose)
 
     logger.info("Starting the Flask application...")
     logger.info("Application is configured with the following settings:")
