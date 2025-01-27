@@ -2,7 +2,7 @@ import logging
 
 from flask import Blueprint, Response, g, jsonify, request
 
-from services.game_service.utils.pagination import paginate
+from .utils.pagination import paginate
 
 logger = logging.getLogger(__name__)
 

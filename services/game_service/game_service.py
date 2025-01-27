@@ -3,7 +3,7 @@ from typing import List, Optional, TypedDict
 
 import pandas as pd
 
-from services.game_service.utils.data_loader import load_csv
+from .utils.data_loader import load_csv
 
 logger = logging.getLogger(__name__)
 

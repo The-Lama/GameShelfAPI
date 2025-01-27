@@ -2,10 +2,9 @@ import logging
 
 from flask import Flask, g
 
-from services.game_service.game_service import GameService
-from services.game_service.routes import game_routes
-from services.game_service.utils.config import (configure_logging,
-                                                parse_arguments)
+from .game_service import GameService
+from .routes import game_routes
+from .utils.config import configure_logging, parse_arguments
 
 logger = logging.getLogger(__name__)
 
