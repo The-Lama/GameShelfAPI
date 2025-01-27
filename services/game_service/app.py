@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from flask import Flask, g
 
@@ -38,5 +39,9 @@ if __name__ == "__main__":
     logger.info("Application is configured with the following settings:")
     logger.info(f"HOST: {host}, PORT: {port}, Dataset Path: {dataset_path}")
 
-    game_service = GameService(dataset_path)
-    app.run(host="0.0.0.0", port=5001)
+    try:
+        game_service = GameService(dataset_path)
+        app.run(host="0.0.0.0", port=5001)
+    except Exception as e:
+        logger.critical(f"Application failed to start: {e}", exc_info=True)
+        sys.exit(1)
