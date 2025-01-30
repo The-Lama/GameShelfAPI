@@ -17,7 +17,11 @@ def test_fiter_games(client: FlaskClient) -> None:
 
     assert response.status_code == 200
     assert len(data["games"]) == 2
-    assert data["games"][1]["Name"] == "Chess"
+
+    expected_games = {"Buffalo Chess", "Chess"}
+    returned_games = {game["name"] for game in data["games"]}
+
+    assert expected_games == returned_games
 
 
 def test_invalid_pagination(client: FlaskClient) -> None:
@@ -29,10 +33,19 @@ def test_invalid_pagination(client: FlaskClient) -> None:
     assert "error" in data
 
 
+def test_pagination_out_of_bounds(client: FlaskClient) -> None:
+    """Test pagination when requesting a page beyond available data."""
+    response = client.get("/games?page=1000&limit=10")
+    data = response.get_json()
+
+    assert response.status_code == 404
+    assert "error" in data
+
+
 def test_get_game_by_id(client: FlaskClient) -> None:
     """Test retrieving a game by its ID."""
     response = client.get("/games/1")
     data = response.get_json()
 
     assert response.status_code == 200
-    assert data["Name"] == "Die Macher"
+    assert data["name"] == "Die Macher"

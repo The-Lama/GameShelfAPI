@@ -3,20 +3,29 @@ import pytest
 from services.game_service.game_service import GameService
 
 
-def test_list_games_with_static_data(static_game_service: GameService) -> None:
+def test_list_games_with_static_data(setup_database) -> None:
     """Test that all games are listed correctly."""
-    games = static_game_service.list_games()
+    games = GameService().list_games()
     assert len(games) == 8
-    assert games[0]["Name"] == "Die Macher"
-    assert games[5]["Name"] == "Mare Mediterraneum"
+    assert games[0]["name"] == "Die Macher"
+    assert games[5]["name"] == "Mare Mediterraneum"
 
 
-def test_list_games_with_filter(static_game_service: GameService) -> None:
+def test_list_games_with_filter(setup_database) -> None:
     """Test that list_games filter works as expected."""
-    games = static_game_service.list_games("Chess")
+    games = GameService().list_games("chess")
     assert len(games) == 2
-    assert games[0]["Name"] == "Buffalo Chess"
-    assert games[1]["Name"] == "Chess"
+
+    expected_games = {"Buffalo Chess", "Chess"}
+    returned_games = {game["name"] for game in games}
+
+    assert expected_games == returned_games
+
+
+def list_games_with_no_match(setup_database) -> None:
+    """Test that list games filter returns None if no match is found."""
+    games = GameService().list_games("NonExistentGame")
+    assert games == []
 
 
 @pytest.mark.parametrize(
@@ -27,26 +36,15 @@ def test_list_games_with_filter(static_game_service: GameService) -> None:
         (4, "Tal der Könige"),
     ],
 )
-def test_get_existing_game_by_id_static(
-    static_game_service: GameService, game_id: int, expected_name: str
+def test_get_existing_game_by_id(
+    setup_database, game_id: int, expected_name: str
 ) -> None:
     """Test fetching an existing game by ID."""
-    game = static_game_service.get_game(game_id)
-    assert game["Name"] == expected_name
+    game = GameService().get_game(game_id)
+    assert game["name"] == expected_name
 
 
-def test_get_nonexisten_by_id_static(static_game_service: GameService) -> None:
+def test_get_nonexistent_game_by_id(setup_database) -> None:
     """Test fetching a non-existent game returns None."""
-    game = static_game_service.get_game(999)
+    game = GameService().get_game(999)
     assert game is None
-
-
-def test_csv_game_service_integration(csv_game_service: GameService) -> None:
-    """Integration Test: Ensure the CSV service works end-to-end."""
-    games = csv_game_service.list_games()
-    assert len(games) == 5
-    assert games[0]["Name"] == "Die Macher"
-    assert games[0]["BGGId"] == 1
-
-    game = csv_game_service.get_game(2)
-    assert game["Name"] == "Dragonmaster"

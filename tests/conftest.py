@@ -1,41 +1,42 @@
 from typing import Generator
 
 import pytest
+from flask import Flask
 from flask.testing import FlaskClient
 
-from services.game_service.app import app
-from services.game_service.game_service import GameService
+from services.game_service.app import create_app
+from services.game_service.database.database import db
+from services.game_service.database.seed import seed_test_data
 
 ClientGenerator = Generator[FlaskClient, None, None]
 
 
-@pytest.fixture
-def static_game_service() -> GameService:
-    """Create a GameService fixture using predefined static data."""
-    static_games = [
-        {"BGGId": 1, "Name": "Die Macher"},
-        {"BGGId": 2, "Name": "Dragonmaster"},
-        {"BGGId": 3, "Name": "Samurai"},
-        {"BGGId": 4, "Name": "Tal der Könige"},
-        {"BGGId": 5, "Name": "Acquire"},
-        {"BGGId": 6, "Name": "Mare Mediterraneum"},
-        {"BGGId": 32, "Name": "Buffalo Chess"},
-        {"BBId": 171, "Name": "Chess"},
-    ]
-    service = GameService.from_static_data(static_games)
-    return service
+@pytest.fixture(scope="session")
+def app() -> Flask:
+    """Create a Flask app with in-memory SQLite database."""
+    app = create_app("sqlite:///:memory:")
 
+    db.init_app(app)
 
-@pytest.fixture(scope="module")
-def csv_game_service() -> GameService:
-    """Create a GameService fixture using data from a CSV file."""
-    return GameService("tests/data/games_test.csv")
+    return app
 
 
 @pytest.fixture
-def client(static_game_service) -> ClientGenerator:
-    """Create a Flask test client using the static game service."""
-    app.config["TESTING"] = True
-    app.config["GAME_SERVICE"] = static_game_service
-    with app.test_client() as client:
-        yield client
+def setup_database(app: Flask):
+    """Create all tables and seed them with test data, then drop them after each test."""
+    with app.app_context():
+        db.create_all()
+        seed_test_data()
+        yield
+        db.drop_all()
+
+
+@pytest.fixture
+def client(app, setup_database):
+    """
+    Return a Flask test client using the 'app' fixture.
+
+    Ensures each test has a fresh in-memory DB seeded with data.
+    """
+    with app.test_client() as test_client:
+        yield test_client
