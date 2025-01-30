@@ -1,46 +1,58 @@
 import logging
 import sys
 
-from flask import Flask, g
+from flask import Flask
 
-from .game_service import GameService
+from .database.database import db, init_db
+from .database.seed import seed_data
 from .routes import game_routes
 from .utils.config import configure_logging, parse_arguments
 
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
-app.register_blueprint(game_routes)
+
+def create_app(database_url: str) -> Flask:
+    """Create a Flask application and set configurations and blueprints."""
+    logging.debug(f"Creating app with database URL: {database_url}")
+    app = Flask(__name__)
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    app.register_blueprint(game_routes)
+
+    return app
 
 
-def get_game_service() -> GameService:
-    """Return the GameService instance."""
-    logger.debug("Retrieving the GameService instance.")
-    if "GAME_SERVICE" in app.config:
-        return app.config["GAME_SERVICE"]
-    return game_service
-
-
-@app.before_request
-def set_game_service() -> None:
-    """Set the GameService instance in the global context."""
-    g.game_service = get_game_service()
+def setup_database(app: Flask, games_dataset_path: str) -> None:
+    """Initialize the database and seed the data."""
+    logger.info("Initializing database...")
+    init_db(app)
+    with app.app_context():
+        db.create_all()
+        logger.info("Seeding the database with initial data...")
+        seed_data(games_dataset_path)
 
 
 if __name__ == "__main__":
-    port = 5001
-    host = "0.0.0.0"
-    dataset_path = "data/games.csv"
-
     args = parse_arguments()
     configure_logging(args.verbose)
 
+    port = args.port
+    host = args.host
+    dataset_path = args.games_dataset
+    database_url = args.database_url
+
     logger.info("Starting the Flask application...")
     logger.info("Application is configured with the following settings:")
-    logger.info(f"HOST: {host}, PORT: {port}, Dataset Path: {dataset_path}")
+    logger.info(f"HOST: {host}, PORT: {port}")
+    logger.info(f"Dataset Path: {dataset_path}, Database_url: {database_url}")
 
     try:
-        game_service = GameService(dataset_path)
+        app = create_app(database_url)
+
+        setup_database(app, dataset_path)
+
         app.run(host="0.0.0.0", port=5001)
     except Exception as e:
         logger.critical(f"Application failed to start: {e}", exc_info=True)

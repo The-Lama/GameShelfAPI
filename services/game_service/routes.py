@@ -1,7 +1,8 @@
 import logging
 
-from flask import Blueprint, Response, g, jsonify, request
+from flask import Blueprint, Response, jsonify, request
 
+from .game_service import GameService
 from .utils.pagination import paginate
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ def list_games() -> Response:
     limit = int(request.args.get("limit", 10))
     name_filter = request.args.get("name", "").lower()
 
-    games = g.game_service.list_games(name_filter)
+    games = GameService().list_games(name_filter)
     if name_filter and not games:
         logger.warning(
             f"No games found with matching the filter criteria: '{name_filter}'"
@@ -31,7 +32,7 @@ def list_games() -> Response:
         paginated_games = paginate(games, page, limit)
     except (ValueError, IndexError) as e:
         logger.warning(f"Pagination error: {e}")
-        status_code = 422 if isinstance(e, ValueError) else 204
+        status_code = 422 if isinstance(e, ValueError) else 404
         return jsonify({"error": str(e)}), status_code
 
     response = {
@@ -49,9 +50,12 @@ def list_games() -> Response:
 def get_game(game_id: int) -> Response:
     """Return details of a game by ID if it exists."""
     logger.info(f"Received request to for game with ID: {game_id}")
-    game = g.game_service.get_game(game_id)
+
+    game = GameService().get_game(game_id)
+
     if game is None:
         logger.warning(f"Game with ID {game_id} was not found.")
         return jsonify({"error": "Game not found"}), 404
+
     logger.info(f"Returning game with ID {game_id}")
     return jsonify(game)
