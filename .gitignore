@@ -1,5 +1,7 @@
 __pycache__/
 data/*
+instance/
+.env
 
 # Allow the placeholder file
 !data/.gitkeep
