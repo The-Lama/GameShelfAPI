@@ -3,24 +3,23 @@ import sys
 
 from flask import Flask
 
+from ..common.arg_parser import configure_logging, parse_arguments
 from .database.database import db, init_db
 from .database.seed import seed_data
 from .routes import game_routes
-from .utils.config import configure_logging, parse_arguments
 
 logger = logging.getLogger(__name__)
 
 
 def create_app(database_url: str) -> Flask:
     """Create a Flask application and set configurations and blueprints."""
-    logging.debug(f"Creating app with database URL: {database_url}")
-    app = Flask(__name__)
+    logger.debug(f"Creating app with database URL: {database_url}")
 
+    app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     app.register_blueprint(game_routes)
-
     return app
 
 
@@ -35,7 +34,7 @@ def setup_database(app: Flask, games_dataset_path: str) -> None:
 
 
 if __name__ == "__main__":
-    args = parse_arguments()
+    args = parse_arguments("game_service")
     configure_logging(args.verbose)
 
     port = args.port
@@ -53,7 +52,7 @@ if __name__ == "__main__":
 
         setup_database(app, dataset_path)
 
-        app.run(host="0.0.0.0", port=5001)
+        app.run(host=host, port=port)
     except Exception as e:
         logger.critical(f"Application failed to start: {e}", exc_info=True)
         sys.exit(1)
