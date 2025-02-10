@@ -3,9 +3,9 @@ import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
-
 logger = logging.getLogger(__name__)
+
+db = SQLAlchemy()
 
 
 def init_db(app: Flask):
