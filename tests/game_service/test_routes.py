@@ -10,7 +10,7 @@ def test_list_games(client: FlaskClient) -> None:
     assert len(data["games"]) == 2
 
 
-def test_fiter_games(client: FlaskClient) -> None:
+def test_filter_games(client: FlaskClient) -> None:
     """Test filtering games by a name query parameter."""
     response = client.get("/games?name=Chess")
     data = response.get_json()

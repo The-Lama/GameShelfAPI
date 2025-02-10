@@ -40,19 +40,25 @@ class PageExceedsDataRangeError(Exception):
 
 
 def paginate(data: List[GameDict], page: int, limit: int) -> List[GameDict]:
-    """Return a paginated subset of data based on the given page and limit."""
+    """
+    Return a paginated subset of data based on the given page and limit.
+
+    Args:
+        data (List[GameDict]): A list of game dictionary objects.
+        page (int): The page number to retrieve.
+        limit (int): Number of game dictionary objects per page.
+
+    Returns:
+        A subset of the game dictionary objects for the requested range.
+    """
     logger.debug(f"Pagination parameters - page: {page}, limit: {limit}")
     if page < 1 or limit < 1:
-        logger.warning(
-            f"Pagination Error page {page} or limit {limit} is smaller than 1."
-        )
         raise InvalidPaginationParametersError(page, limit)
 
     start = (page - 1) * limit
     end = start + limit
 
     if start >= len(data):
-        logger.warning(f"Page {page} exceeds available data range.")
         raise PageExceedsDataRangeError(page)
 
     return data[start:end]
