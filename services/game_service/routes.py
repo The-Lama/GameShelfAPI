@@ -2,8 +2,13 @@ import logging
 
 from flask import Blueprint, Response, jsonify, request
 
+from .exceptions import GameNotFoundError, NoGamesMatchNameFilterError
 from .game_service import GameService
-from .utils.pagination import paginate
+from .utils.pagination import (
+    InvalidPaginationParametersError,
+    PageExceedsDataRangeError,
+    paginate,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -13,27 +18,24 @@ game_routes = Blueprint("game_routes", __name__)
 @game_routes.route("/games", methods=["GET"])
 def list_games() -> Response:
     """Return a list of all games."""
-    logger.info("Recieved request to list games.")
-    page = int(request.args.get("page", 1))
-    limit = int(request.args.get("limit", 10))
+    logger.info("Received request to list games.")
+
+    page = request.args.get("page", 1, type=int)
+    limit = request.args.get("limit", 10, type=int)
     name_filter = request.args.get("name", "").lower()
 
-    games = GameService().list_games(name_filter)
-    if name_filter and not games:
-        logger.warning(
-            f"No games found with matching the filter criteria: '{name_filter}'"
-        )
-        return (
-            jsonify({"error": "No games found matching the filter criteria"}),
-            204,
-        )
-
     try:
+        games = GameService().list_games(name_filter)
         paginated_games = paginate(games, page, limit)
-    except (ValueError, IndexError) as e:
-        logger.warning(f"Pagination error: {e}")
-        status_code = 422 if isinstance(e, ValueError) else 404
-        return jsonify({"error": str(e)}), status_code
+
+    except NoGamesMatchNameFilterError:
+        return jsonify({"games": []}), 200
+
+    except InvalidPaginationParametersError as e:
+        return jsonify({"error": str(e)}), 422
+
+    except PageExceedsDataRangeError as e:
+        return jsonify({"error": str(e)}), 404
 
     response = {
         "page": page,
@@ -43,7 +45,7 @@ def list_games() -> Response:
     }
 
     logger.info(f"Returning {len(paginated_games)} games for page {page}")
-    return jsonify(response)
+    return jsonify(response), 200
 
 
 @game_routes.route("/games/<int:game_id>", methods=["GET"])
@@ -51,11 +53,10 @@ def get_game(game_id: int) -> Response:
     """Return details of a game by ID if it exists."""
     logger.info(f"Received request to for game with ID: {game_id}")
 
-    game = GameService().get_game(game_id)
-
-    if game is None:
-        logger.warning(f"Game with ID {game_id} was not found.")
-        return jsonify({"error": "Game not found"}), 404
+    try:
+        game = GameService().get_game(game_id)
+    except GameNotFoundError as e:
+        return jsonify({"error": str(e)}), 404
 
     logger.info(f"Returning game with ID {game_id}")
-    return jsonify(game)
+    return jsonify(game), 200

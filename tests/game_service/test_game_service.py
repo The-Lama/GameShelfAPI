@@ -1,5 +1,6 @@
 import pytest
 
+from services.game_service.exceptions import GameNotFoundError
 from services.game_service.game_service import GameService
 
 
@@ -46,5 +47,9 @@ def test_get_existing_game_by_id(
 
 def test_get_nonexistent_game_by_id(setup_database) -> None:
     """Test fetching a non-existent game returns None."""
-    game = GameService().get_game(999)
-    assert game is None
+    non_existent_id = 999
+
+    with pytest.raises(GameNotFoundError) as exc_info:
+        GameService().get_game(non_existent_id)
+
+    assert str(exc_info.value) == f"Game with ID: {non_existent_id} not found."
