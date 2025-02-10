@@ -69,7 +69,7 @@ def get_user(user_id: int) -> Response:
     except UserNotFoundError as e:
         return jsonify({"error": str(e)}), 400
 
-    return jsonify(user)
+    return jsonify(user), 200
 
 
 @user_routes.route("/users/favorites", methods=["POST"])
@@ -105,7 +105,7 @@ def add_favorite_game(user_id: int, game_id: int) -> Response:
     except DatabaseError as e:
         return jsonify({"error": str(e)}), 500
 
-    return favorite_game
+    return jsonify(favorite_game), 200
 
 
 @user_routes.route("/users/favorites", methods=["GET"])
@@ -129,4 +129,4 @@ def get_favorite_games(user_id: int) -> Response:
     except UserNotFoundError as e:
         return jsonify({"error": str(e)}), 400
 
-    return jsonify(favorite_games)
+    return jsonify(favorite_games), 200

@@ -20,7 +20,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
 
     def to_dict(self) -> dict:
-        """Convert the User object into a dictonary."""
+        """Convert the User object into a dictionary."""
         return {"user_id": self.user_id, "username": self.username}
 
 
@@ -30,7 +30,7 @@ class FavoriteGame(db.Model):
 
     Attributes:
         favorite_id (int): The unique identifier for the favorite game entry.
-        user_id (int): The ID of the user who favorited the game.
+        user_id (int): The ID of the user who has marked the game as favorite.
         game_id (int): The ID of the board game marked as favorite.
     """
 
@@ -41,5 +41,5 @@ class FavoriteGame(db.Model):
     game_id = db.Column(db.Integer, nullable=False)
 
     def to_dict(self) -> dict:
-        """Convert the FavoriteGame object into a dictornary."""
+        """Convert the FavoriteGame object into a dictionary."""
         return {"user_id": self.user_id, "game_id": self.game_id}
