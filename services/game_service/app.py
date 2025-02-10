@@ -12,7 +12,15 @@ logger = logging.getLogger(__name__)
 
 
 def create_app(database_url: str) -> Flask:
-    """Create a Flask application and set configurations and blueprints."""
+    """
+    Create and configure the Flask application.
+
+    Args:
+        database_url (str): The database connection URL.
+
+    Returns:
+        Flask: The configured Flask application instance.
+    """
     logger.debug(f"Creating app with database URL: {database_url}")
 
     app = Flask(__name__)
@@ -24,7 +32,12 @@ def create_app(database_url: str) -> Flask:
 
 
 def setup_database(app: Flask, games_dataset_path: str) -> None:
-    """Initialize the database and seed the data."""
+    """
+    Initialize the database and seed the data.
+
+    Args:
+        app (Flask): The Flask application instance.
+    """
     logger.info("Initializing database...")
     init_db(app)
     with app.app_context():
