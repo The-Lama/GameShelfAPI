@@ -23,7 +23,7 @@ def handle_no_games_match_name_filter(error: NoGamesMatchNameFilterError) -> Res
     Args:
         error (NoGamesMatchNameFilterError): Exception instance.
 
-    returns: A JSON response with an empty list.
+    Returns: A JSON response with an empty list.
     """
     logger.error(f"No games match the filter: {error.name_filter}")
     return jsonify({"games": []}), 200
@@ -122,7 +122,7 @@ def get_game(game_id: int) -> Response:
     Args:
         game_id (int): The unique identifier of the game to be retrieved.
 
-    returns:
+    Returns:
         Response: A JSON response containing details of the game.
     """
     logger.info(f"Received request to for game with ID: {game_id}")
