@@ -19,6 +19,49 @@ logger = logging.getLogger(__name__)
 user_routes = Blueprint("user_routes", __name__)
 
 
+@user_routes.errorhandler(DatabaseError)
+def handle_database_error(error: DatabaseError):
+    """
+    Handle the case where a general database error occurs.
+
+    Args:
+        error (DatabaseError): Exception instance.
+
+    Returns: 500 status code.
+    """
+    logger.error("An error occurred during a database query.")
+    return jsonify({"error": str(error)}), 500
+
+
+@user_routes.errorhandler(UserAlreadyExistsError)
+def handle_user_already_exists_error(error: UserAlreadyExistsError):
+    """
+    Handle the case where a user cannot be created as the username is already taken.
+
+    Args:
+        error (UserAlreadyExistsError): Exception instance.
+
+    Returns: 409 status code.
+    """
+    logger.error(f"Username '{error.username}' is already taken.")
+    logger.error(f"Failed to create user '{error.username}'.")
+    return jsonify({"error": str(error)}), 409
+
+
+@user_routes.errorhandler(UserNotFoundError)
+def handle_user_not_found_error(error: UserNotFoundError):
+    """
+    Handle case where no user can be found under the requested ID.
+
+    Args:
+        error (UserNotFoundError): Exception instance.
+
+    Returns: 404 status code.
+    """
+    logger.error(f"User with user_id {error.user_id} was not found.")
+    return jsonify({"error": str(error)}), 404
+
+
 @user_routes.route("/users", methods=["POST"])
 @validate_json_parameters(("username", str))
 def create_user(username) -> Response:
@@ -29,22 +72,13 @@ def create_user(username) -> Response:
         username (str): The username of the new user.
 
     Returns:
-        Response: JSON response with user data if successful.
-        Returns 409 if the user already exists.
-        Returns 500 if a database error occurs.
+        Response: JSON response with user data.
     """
     logger.info("Received request to create a new user.")
 
-    try:
-        user = UserService().create_user(username)
+    user = UserService().create_user(username)
 
-    except UserAlreadyExistsError as e:
-        return jsonify({"error": str(e)}), 409
-
-    except DatabaseError as e:
-        return jsonify({"error": str(e)}), 500
-
-    logger.info(f"created user: {username}")
+    logger.info(f"created user: {user['username']}")
     return jsonify(user), 201
 
 
@@ -59,22 +93,17 @@ def get_user(user_id: int) -> Response:
 
     Returns:
         Response: JSON response containing user data.
-        Returns 400 is the user is not found.
     """
     logger.info("Received request to get user by id.")
 
-    try:
-        user = UserService().get_user(user_id)
-
-    except UserNotFoundError as e:
-        return jsonify({"error": str(e)}), 400
+    user = UserService().get_user(user_id)
 
     return jsonify(user), 200
 
 
-@user_routes.route("/users/favorites", methods=["POST"])
-@validate_json_parameters(("user_id", int), ("game_id", int))
-def add_favorite_game(user_id: int, game_id: int) -> Response:
+@user_routes.route("/users/<int:user_id>/favorites", methods=["POST"])
+@validate_json_parameters(("game_id", int))
+def add_favorite_game(game_id: int, user_id: int) -> Response:
     """
     Add a game to a user's favorite games.
 
@@ -85,7 +114,7 @@ def add_favorite_game(user_id: int, game_id: int) -> Response:
     Returns:
         Response: JSON response with the id pair user_id and game_id.
         Returns 409 if the game is already in the user's favorites.
-        Returns 400 if the user is not found.
+        Returns 404 if the user is not found.
         Returns 500 for a database error.
     """
     logger.debug("Received request to add a user's favorite game.")
@@ -97,7 +126,7 @@ def add_favorite_game(user_id: int, game_id: int) -> Response:
         favorite_game = UserService().add_favorite_game(user_id, game_id)
 
     except UserNotFoundError as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": str(e)}), 404
 
     except GameAlreadyInFavoritesError as e:
         return jsonify({"error": str(e)}), 409
@@ -108,8 +137,7 @@ def add_favorite_game(user_id: int, game_id: int) -> Response:
     return jsonify(favorite_game), 200
 
 
-@user_routes.route("/users/favorites", methods=["GET"])
-@validate_query_parameters(("user_id", int))
+@user_routes.route("/users/<int:user_id>/favorites", methods=["GET"])
 def get_favorite_games(user_id: int) -> Response:
     """
     Retrieve a user's favorite games.
