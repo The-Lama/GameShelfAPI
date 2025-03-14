@@ -8,7 +8,7 @@ class UserAlreadyExistsError(Exception):
         Args:
             username (str): The username that is already taken.
         """
-        super().__init__(f"User already exists: {username}")
+        super().__init__(f"Username '{username}' is already taken")
         self.username = username
 
 
@@ -22,7 +22,7 @@ class UserNotFoundError(Exception):
         Args:
             user_id (str): The ID of the user that was not found.
         """
-        super().__init__(f"User with ID: {user_id} not found.")
+        super().__init__(f"User with user_id '{user_id}' not found")
         self.user_id = user_id
 
 
@@ -41,9 +41,7 @@ class GameAlreadyInFavoritesError(Exception):
             user_id (int): The ID of the user.
             game_id (int): The ID of the game that is already in favorites.
         """
-        super().__init__(
-            f"User with ID: {user_id} has already favored game with ID: {game_id}"
-        )
+        super().__init__(f"User_id '{user_id}' has already favored game_id '{game_id}'")
         self.user_id = user_id
         self.game_id = game_id
 
